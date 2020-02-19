@@ -1,5 +1,8 @@
+import os
+import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
 from kinematicchain import KinematicChain
@@ -9,12 +12,13 @@ class InverseKinematicsSolver:
 	Class that performs inverse kinematics by gradient descent (kinda) on the error between end-effector and target point.
 	"""
 
-	def __init__(self, kinematic_chain, lr=1e-5, dt=0.01, dt_max=0.01):
+	def __init__(self, kinematic_chain, lr=1e-5, dt=0.01, dt_max=0.01, max_steps = 10000):
 		self.chain = kinematic_chain
 		self.control_dim = len(self.chain.control_links)
 		self.lr = lr
 		self.dt = dt
 		self.dt_max = dt_max
+		self.max_steps = max_steps
 		self.target = None
 
 	def numeric_jacobian(self):
@@ -63,7 +67,21 @@ class InverseKinematicsSolver:
 
 		self.chain.update_control(new_control)
 
-	
+	def make_video(self, target, render_every=5):
+		frames = []
+		subprocess.call(['mkdir', 'video'])
+		for i in range(self.max_steps):
+			self.step()
+			print('Frame', i, end='\r')
+			if i % render_every == 0:
+				self.render()
+				plt.savefig('video/frame{:05d}.png'.format(i//render_every))
+
+		os.chdir("video")
+		subprocess.call(['ffmpeg', '-framerate', '100', '-i', 'frame%05d.png', '-pix_fmt', 'yuv420p', '-vcodec', 'libx264', '../video.mp4'])
+		os.chdir('../')
+		subprocess.call(['rm', '-r', 'video'])
+			
 
 	def render(self, bounds = {'x':(-5, 5), 'y':(-5, 5), 'z':(0, 10)}):
 		fig, ax = self.chain.render()
@@ -74,8 +92,8 @@ class InverseKinematicsSolver:
 		ax.set_zlim(bounds['z'])
 
 		plt.legend()
-		plt.show()
-		
+
+		return fig, ax
 
 def pseudo_inverse(J):
 	"""

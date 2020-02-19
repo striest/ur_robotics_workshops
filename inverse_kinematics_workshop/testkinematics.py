@@ -26,13 +26,8 @@ print(chain.links)
 
 print(chain.compute_htms())
 
-ik = InverseKinematicsSolver(chain, dt=1e-2, lr=1e-4, dt_max=0.1)
+ik = InverseKinematicsSolver(chain, dt=1e-2, lr=1e-4, dt_max=0.1, max_steps=1000)
 
 ik.set_target([np.random.uniform(-5, 5), np.random.uniform(-5, 5), np.random.uniform(0, 10)])
 
-print(ik.target)
-
-for i in range(10000):
-	ik.step()
-	if i % 100 == 0:
-		ik.render()
+ik.make_video([np.random.uniform(-5, 5), np.random.uniform(-5, 5), np.random.uniform(0, 10)], render_every=1)
