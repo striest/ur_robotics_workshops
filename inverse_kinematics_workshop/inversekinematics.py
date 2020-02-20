@@ -12,13 +12,13 @@ class InverseKinematicsSolver:
 	Class that performs inverse kinematics by gradient descent (kinda) on the error between end-effector and target point.
 	"""
 
-	def __init__(self, kinematic_chain, lr=1e-5, dt=0.01, dt_max=0.01, max_steps = 10000):
+	def __init__(self, kinematic_chain, lr=1e-5, dt=0.01, dt_max=0.01, convergence = 1e-4):
 		self.chain = kinematic_chain
 		self.control_dim = len(self.chain.control_links)
 		self.lr = lr
 		self.dt = dt
 		self.dt_max = dt_max
-		self.max_steps = max_steps
+		self.convergence = convergence
 		self.target = None
 
 	def numeric_jacobian(self):
@@ -49,6 +49,9 @@ class InverseKinematicsSolver:
 		"""
 		self.target = np.array([target[0], target[1], target[2]])
 
+	def sample_target(self, bounds = {'x':(-5, 5), 'y':(-5, 5), 'z':(0, 10)}):
+		self.target = np.array([np.random.uniform(*bounds['x']), np.random.uniform(*bounds['y']), np.random.uniform(*bounds['z'])])
+
 	def error(self):
 		return (self.target - self.chain.end_effector_position()).T
 
@@ -61,28 +64,37 @@ class InverseKinematicsSolver:
 		if scale > 1:
 			dt /= scale
 
-		print('dt =', dt)
+		#print('dt = {}, MSE = {}'.format(dt, np.mean(self.error() ** 2)))
+		print('MSE = {}'.format(np.mean(self.error() ** 2)))
 
 		new_control = self.chain.control + dt
 
 		self.chain.update_control(new_control)
 
-	def make_video(self, target, render_every=5):
+	def converged(self):
+		return np.mean(self.error() ** 2) < self.convergence
+
+	def make_video(self, render_every=5, resample_every = 500, steps = 5000):
 		frames = []
 		subprocess.call(['mkdir', 'video'])
-		for i in range(self.max_steps):
+		cnt = 0
+		for i in range(steps):
+			if cnt % resample_every == 0 or self.converged():
+				print('resample')
+				self.sample_target()
+				cnt = 0
 			self.step()
-			print('Frame', i, end='\r')
+			print('Frame', i, end='\r\r')
 			if i % render_every == 0:
 				self.render()
 				plt.savefig('video/frame{:05d}.png'.format(i//render_every))
+			cnt += 1
 
 		os.chdir("video")
 		subprocess.call(['ffmpeg', '-framerate', '100', '-i', 'frame%05d.png', '-pix_fmt', 'yuv420p', '-vcodec', 'libx264', '../video.mp4'])
 		os.chdir('../')
 		subprocess.call(['rm', '-r', 'video'])
 			
-
 	def render(self, bounds = {'x':(-5, 5), 'y':(-5, 5), 'z':(0, 10)}):
 		fig, ax = self.chain.render()
 		ax.scatter(self.target[0], self.target[1], self.target[2], c='r', marker='x', label='target (x={:.2f}, y={:.2f},z={:.2f})'.format(self.target[0], self.target[1], self.target[2]))
