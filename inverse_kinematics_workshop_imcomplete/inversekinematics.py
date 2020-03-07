@@ -29,19 +29,9 @@ class InverseKinematicsSolver:
 		de = J*dt
 		dt = J_inv*de
 		"""
-		base_pos = self.chain.end_effector_position()
-		J_rows = []
-
-		for i in range(self.control_dim):
-			du = np.zeros(self.control_dim)
-			du[i] += self.dt
-			self.chain.update_control(self.chain.control + du)
-			new_pos = self.chain.end_effector_position()
-			J_rows.append(new_pos - base_pos)
-			#Don't forget to move the chain back!
-			self.chain.update_control(self.chain.control - du)
-			
-		return np.stack(J_rows, axis=0)		
+		"""
+		TODO: Implement this function according to the spec. Note that dt should be used as the perturbation.
+		"""
 
 	def set_target(self, target):
 		"""
@@ -56,20 +46,10 @@ class InverseKinematicsSolver:
 		return (self.target - self.chain.end_effector_position()).T
 
 	def step(self):
-		ji = pseudo_inverse(self.numeric_jacobian())
-		de = self.error()
-		dt = self.lr * np.dot(de, ji)
-
-		scale = np.max(np.abs(dt) / self.dt_max)
-		if scale > 1:
-			dt /= scale
-
-		#print('dt = {}, MSE = {}'.format(dt, np.mean(self.error() ** 2)))
-		print('Dist to target = {}'.format(np.sum(self.error() ** 2) ** 0.5))
-
-		new_control = self.chain.control + dt
-
-		self.chain.update_control(new_control)
+		"""
+		TODO: implement one step of the Jacobian-based update method. This involves getting the Jacobian of the current config, inverting it,
+		and using the J^-1 and the error vector to compute a control step.
+		"""
 
 	def converged(self):
 		return np.sum(self.error() ** 2) ** 0.5 < self.convergence
