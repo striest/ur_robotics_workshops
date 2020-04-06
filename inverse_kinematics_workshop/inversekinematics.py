@@ -37,11 +37,11 @@ class InverseKinematicsSolver:
 			du[i] += self.dt
 			self.chain.update_control(self.chain.control + du)
 			new_pos = self.chain.end_effector_position()
-			J_rows.append(new_pos - base_pos)
+			J_rows.append((new_pos - base_pos) / self.dt)
 			#Don't forget to move the chain back!
 			self.chain.update_control(self.chain.control - du)
 			
-		return np.stack(J_rows, axis=0)		
+		return np.stack(J_rows, axis=0)
 
 	def set_target(self, target):
 		"""

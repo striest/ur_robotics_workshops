@@ -33,7 +33,7 @@ print(chain.links)
 
 print(chain.compute_htms())
 
-ik = InverseKinematicsSolver(chain, dt=1e-3, lr=1e-4, dt_max=0.05)
+ik = InverseKinematicsSolver(chain, dt=1e-3, lr=0.5, dt_max=0.05)
 
 #ik.make_video([np.random.uniform(-5, 5), np.random.uniform(-5, 5), np.random.uniform(0, 10)], render_every=1)
-ik.make_video(render_every=1, resample_every=500, steps=10000)
+ik.make_video(render_every=1, resample_every=500, steps=2000)
