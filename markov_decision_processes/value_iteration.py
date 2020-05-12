@@ -9,7 +9,7 @@ class ValueEstimation:
 		V = np.zeros((env.n, env.m))
 
 		for itr in range(n_itrs):
-			print('i =', itr)
+			print('ITR {}/{}'.format(itr, n_itrs), end='\r')
 			for i in range(V.shape[0]):
 				for j in range(V.shape[1]):
 #					import pdb;pdb.set_trace()

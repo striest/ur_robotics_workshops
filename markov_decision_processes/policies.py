@@ -91,7 +91,17 @@ class EpsilonGreedyPolicy(ArgmaxQPolicy):
 
 		return dist
 		
+class TabularPolicy(Policy):
+	"""
+	Generic policy that can take arbitrary actions
+	"""
+	def __init__(self, env):
+		self.n_acts = env.action_space.shape[0]
+		self.policy = np.zeros((env.n, env.m, self.n_acts))
+		self.policy[:, :, 0] = 1.0
 
+	def forward(self, obs):
+		return self.policy[obs[0], obs[1]]
 
 if __name__ == '__main__':
 	n = 20

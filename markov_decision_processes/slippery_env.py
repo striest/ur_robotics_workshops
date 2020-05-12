@@ -8,8 +8,8 @@ class SlipperyEnv(Env):
 	Environment with 'slippery' actions. There's a random chance you will move perpendicular to what you expect.
 	"""
 
-	def __init__(self, n, m, max_steps, slip_chance = 0.2):
-		super().__init__(n, m, max_steps)
+	def __init__(self, n = None, m = None, fp = None, max_steps = 20, slip_chance = 0.2):
+		super().__init__(n, m, fp, max_steps)
 		self.slip_chance = slip_chance
 
 	def step_from(self, action, state):

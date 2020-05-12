@@ -6,12 +6,14 @@ class Env:
 	"""
 	Basic gridworld environment for implementing MDP stuff
 	"""
-	def __init__(self, n, m, max_steps):
-		self.obstacles = np.zeros((n, m)).astype(int)
+	def __init__(self, n = None, m = None, fp = None, max_steps = 20):
 		self.goal = np.zeros(2).astype(int)
 		self.state = np.zeros(2).astype(int)
-		self.n = n
-		self.m = m
+		self.random_goal = True
+		if n and m and max_steps:
+			self.obstacles = np.zeros((n, m)).astype(int)
+			self.n = n
+			self.m = m
 
 		self.action_map = {
 			0:np.array([0, 1]),
@@ -24,12 +26,48 @@ class Env:
 		self.max_steps = max_steps
 		self.steps = 0
 
+		if fp:
+			self.load_from_fp(fp)
+
+	def load_from_fp(self, fp):
+		self.obstacles = []
+		for line in open(fp):
+			arr = []
+			for c in line:
+				if c == '.':
+					arr.append(0)
+				elif c == 'X':	
+					arr.append(1)
+				elif c == 'G':
+					arr.append(2)
+			arr = np.array(arr)
+			self.obstacles.append(arr)
+			print(arr)
+
+		self.obstacles = np.stack(self.obstacles)
+		self.obstacles = self.obstacles.transpose()
+		self.obstacles = np.flip(self.obstacles, axis=1)
+
+		self.goal = np.argwhere(self.obstacles == 2)
+
+		if self.goal.shape[0] != 0:
+			self.goal = self.goal[0]
+			self.random_goal = False
+
+		self.obstacles[self.obstacles == 2] = 0
+		self.n = self.obstacles.shape[0]
+		self.m = self.obstacles.shape[1]
+
+
 	def reset(self):
 		free_space = np.argwhere(self.obstacles == 0)
 		idx = np.random.choice(len(free_space))
 		self.state = free_space[idx]
-		idx = np.random.choice(len(free_space))
-		self.goal = free_space[idx]
+
+		if self.random_goal:
+			idx = np.random.choice(len(free_space))
+			self.goal = free_space[idx]
+
 		return self.state
 
 	def step(self, action):
