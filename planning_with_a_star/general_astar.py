@@ -1,6 +1,6 @@
 # General A* Formulation
 # Author: Benned Hedegaard
-# Last revised 6/11/2020
+# Last revised 6/12/2020
 # Revisions by Sam Triest on 6/12/2020
 
 import abc
@@ -17,6 +17,8 @@ class State:
 
 	def __eq__(self, other):
 		"""Overrides the default implementation. NEEDS IMPLEMENTATION
+
+		Returns if this State's data is equal to another given State.
 		
 		Args:
 			other (State): Another State to compare with this one.
@@ -31,7 +33,10 @@ class State:
 		pass
 
 	def __repr__(self):
-		"""Overrides the default implementation. NEEDS IMPLEMENTATION"""
+		"""Overrides the default implementation. OPTIONAL IMPLEMENTATION
+		
+		Returns a string representation of this State.
+		"""
 		pass
 
 class Node:
@@ -59,11 +64,13 @@ class Node:
 	def __repr__(self):
 		return str(self.state)+": g = "+str(self.g)+" f = "+str(self.f)
 
+
 class AStarPlanner(object, metaclass=abc.ABCMeta):
 
 	@abc.abstractmethod
 	def neighbors(self, n):
-		"""General neighbors function. NEEDS IMPLEMENTATION
+		"""
+    General neighbors function. NEEDS IMPLEMENTATION
 
 		This function simplifies the overall A* process. We combine what would have been two
 		functions: actions(n) and result(n, a) into one function. In doing so, we can more
@@ -80,20 +87,19 @@ class AStarPlanner(object, metaclass=abc.ABCMeta):
 
 	@abc.abstractmethod
 	def cost(self, c, n):
-		"""General cost function. NEEDS IMPLEMENTATION
-
-		Args:
-			curr (Node): The Node the action was taken from.
-			next (Node): The Node reached by the action.
-
-		Returns:
-			cost (float): Cost of the performed action.
 		"""
-		pass
+  	Computes and returns the cost between the given current Node and next Node.
+
+  	Args:
+  		curr (Node): The Node an action was taken from.
+  		next (Node): The Node reached by that action.
+      """
+    pass
 
 	@abc.abstractmethod
 	def h(self, n, G = None):
-		"""General heuristic function. NEEDS IMPLEMENTATION
+		"""
+    General heuristic function. NEEDS IMPLEMENTATION
 	
 		Args:
 			n (Node): Node to evaluate this heuristic on.
@@ -103,17 +109,20 @@ class AStarPlanner(object, metaclass=abc.ABCMeta):
 	    	min_cost (float): The minimum cost to any goal State from Node n.
 		"""
 		pass
-
+  
 	def backtrack(self, n, closed_list):
-		"""General backtracking function. Works for the above Node format.
-	
-		Args:
-			n (Node): The Node we're backtracking from.
-			closed_list (list of Nodes): Closed list from A* search.
-
-		Returns:
-			path (list of Nodes): The entire path leading to this Node.
 		"""
+    General backtracking function. Works for the above Node format.
+
+    Computes/returns the path preceding Node n by recursively backtracking
+    through the Node.prev pointers.
+
+    Args:
+      n (Node): The Node we're backtracking from.
+
+    Returns:
+      path (list of Nodes): The entire path leading to this Node.
+    """
 		curr = n
 		path = [n]
 		while curr.prev != None:
@@ -122,15 +131,19 @@ class AStarPlanner(object, metaclass=abc.ABCMeta):
 		return path
 
 	def push(self, n, l):
-		"""General unique-enforcing Push function.
-
-		Adds Node n to the given list. If another Node in the list has the
-		same State as n, keeps the better Node based on its f value.
-	
-		Args:
-			n (Node): The Node we're considering adding to the list.
-			list (list of Nodes): List to add the Node to.
 		"""
+    General unique-enforcing Push function.
+
+    Adds Node n to the given list. If another Node in the list has the
+    same State as n, keeps the better Node based on its f value.
+
+    Args:
+      n (Node): The Node we're considering adding to the list.
+      list (list of Nodes): List to add the Node to.
+
+    Returns:
+      Directly edits the given list and thus returns nothing.
+    """
 		add_n = True # Add n unless a better Node is found.
 
 		for i in range(len(l)):
@@ -145,7 +158,11 @@ class AStarPlanner(object, metaclass=abc.ABCMeta):
 			l.append(n)
 
 	def update_gui(self, open_list, closed_list, gui):
-		"""Updates the GUI grid based on the current open and closed lists.
+		"""
+    Updates the GUI grid based on the current open and closed lists.
+    
+	  Interfaces with the GUI using information from the current
+	  open and closed lists. Entirely optional but can help debugging.
 
 		Implementation is optional. Interface with your chosen GUI object.
 	

@@ -1,6 +1,6 @@
 # General A* Formulation - Grid Demo Implementation.
 # Author: Benned Hedegaard
-# Last revised 6/11/2020
+# Last revised 6/12/2020
 
 import pygame
 import numpy as np
@@ -57,6 +57,8 @@ class State:
 
 	def __eq__(self, other):
 		"""Overrides the default implementation.
+
+		Returns if this State's data is equal to another given State.
 		
 		Args:
 			other (State): Another State to compare with this one.
@@ -66,10 +68,13 @@ class State:
 		"""
 		if type(self) != type(other):
 			return False
-		same = (self.data[0] == other.data[0]) and (self.data[1] == other.data[1])
-		return same
+		return ((self.data[0] == other.data[0]) and (self.data[1] == other.data[1]))
 
 	def __repr__(self):
+		"""Overrides the default implementation.
+		
+		Returns a string representation of this State.
+		"""
 		return "("+str(self.data[0])+", "+str(self.data[1])+")"
 
 class Node:
@@ -121,16 +126,17 @@ def actions8(n):
 def neighbors(n):
 	"""Generates all valid neighbors of the given node.
 
-	This function simplifies the overall A* process. We combine what would have been two
-	functions: actions(n) and result(n, a) into one function. In doing so, we can more
-	easily ensure that all new nodes we're generating are within the valid state space.
+	This function simplifies the overall A* process. We combine what would have
+	been two functions: actions(n) and result(n, a) into one function. We can
+	immediately check that all newly explored nodes are valid and unoccupied.
 
 	Args:
 		n (Node): Node we're expanding.
 
 	Returns:
-		neighbors (list of Nodes): All valid resulting Nodes from all valid actions of Node n.
-		Only sets neighbor.state. Doesn't touch g, f, or prev.
+		neighbors (list of Nodes):
+			All valid resulting Nodes from all valid actions of Node n.
+			Only sets neighbor.state. Doesn't touch g, f, or prev.
 	"""
 	neighbors = []
 
@@ -167,9 +173,11 @@ def euclidean(s1, s2):
 def cost(curr, next):
 	"""Cost function for grid demonstration.
 
+	Computes and returns the cost between the given current Node and next Node.
+
 	Args:
-		curr (Node): The Node the action was taken from.
-		next (Node): The Node reached by the action.
+		curr (Node): The Node an action was taken from.
+		next (Node): The Node reached by that action.
 
 	Returns:
 		cost (float): Cost of the performed action.
@@ -178,10 +186,12 @@ def cost(curr, next):
 
 def h(n, G):
 	"""Heuristic function for grid demonstration.
+
+	Returns an estimate of the minimum cost from Node n to any goal State in G.
 	
 	Args:
 		n (Node): Node to evaluate this heuristic on.
-		G (list of States): The set of goal States.
+		G (list of States): The set of goal States. Assumed non-empty.
     
     Returns:
     	min_cost (float): The minimum cost to any goal State from Node n.
@@ -194,12 +204,14 @@ def h(n, G):
 			min_cost = distance
 	return min_cost
 
-def backtrack(n, closed_list):
+def backtrack(n):
 	"""General backtracking function. Works for the above Node format.
+
+	Computes/returns the path preceding Node n by recursively backtracking
+	through the Node.prev pointers.
 	
 	Args:
 		n (Node): The Node we're backtracking from.
-		closed_list (list of Nodes): Closed list from A* search.
 
 	Returns:
 		path (list of Nodes): The entire path leading to this Node.
@@ -220,6 +232,9 @@ def push(n, list):
 	Args:
 		n (Node): The Node we're considering adding to the list.
 		list (list of Nodes): List to add the Node to.
+
+	Returns:
+		Directly edits the given list and thus returns nothing.
 	"""
 	add_n = True # Add n unless a better Node is found.
 
@@ -236,6 +251,9 @@ def push(n, list):
 
 def update_gui(open_list, closed_list, gui):
 	"""Updates the GUI grid based on the current open and closed lists.
+
+	Interfaces with the GUI using information from the current
+	open and closed lists. Entirely optional but can help debugging.
 	
 	Args:
 		open_list (list of Nodes): Current open list.
@@ -282,7 +300,7 @@ def a_star(s, G, gui=None):
 		# Line 5. Scans over all goal states checking for equality.
 		for g in G:
 			if curr.state == g:
-				return backtrack(curr, closed_list) # Line 6
+				return backtrack(curr) # Line 6
 
 		closed_list.append(curr) # Line 7
 
