@@ -1,6 +1,9 @@
 # General A* Formulation
 # Author: Benned Hedegaard
 # Last revised 6/12/2020
+# Revisions by Sam Triest on 6/12/2020
+
+import abc
 
 class State:
 	"""A State representation must be explicitly defined."""
@@ -55,158 +58,163 @@ class Node:
 		"""
 		if type(self) != type(other):
 			return False
-		return (self.state == other.state)
+		equal = (self.state == other.state)
+		return equal if type(equal) is bool else all(equal) #do this to handle numpy arrays as state
 
 	def __repr__(self):
 		return str(self.state)+": g = "+str(self.g)+" f = "+str(self.f)
 
-def neighbors(n):
-	"""Generates all valid neighbors of the given node. NEEDS IMPLEMENTATION
 
-	This function simplifies the overall A* process. We combine what would have
-	been two functions: actions(n) and result(n, a) into one function. We can
-	immediately check that all newly explored nodes are valid and unoccupied.
+class AStarPlanner(object, metaclass=abc.ABCMeta):
 
-	Args:
-		n (Node): Node we're expanding.
+	@abc.abstractmethod
+	def neighbors(self, n):
+		"""
+    General neighbors function. NEEDS IMPLEMENTATION
 
-	Returns:
-		neighbors (list of Nodes):
-			All valid resulting Nodes from all valid actions of Node n.
+		This function simplifies the overall A* process. We combine what would have been two
+		functions: actions(n) and result(n, a) into one function. In doing so, we can more
+		easily ensure that all new nodes we're generating are within the valid state space.
+
+		Args:
+			n (Node): Node we're expanding.
+
+		Returns:
+			neighbors (list of Nodes): All valid resulting Nodes from all valid actions of Node n.
 			Only sets neighbor.state. Doesn't touch g, f, or prev.
-	"""
-	pass
+		"""
+		pass
 
-def cost(curr, next):
-	"""General cost function. NEEDS IMPLEMENTATION
+	@abc.abstractmethod
+	def cost(self, c, n):
+		"""
+  	Computes and returns the cost between the given current Node and next Node.
 
-	Computes and returns the cost between the given current Node and next Node.
+  	Args:
+  		curr (Node): The Node an action was taken from.
+  		next (Node): The Node reached by that action.
+      """
+    pass
 
-	Args:
-		curr (Node): The Node an action was taken from.
-		next (Node): The Node reached by that action.
-
-	Returns:
-		cost (float): Cost of the performed action.
-	"""
-	pass
-
-def h(n, G):
-	"""General heuristic function. NEEDS IMPLEMENTATION
-
-	Returns an estimate of the minimum cost from Node n to any goal State in G.
+	@abc.abstractmethod
+	def h(self, n, G = None):
+		"""
+    General heuristic function. NEEDS IMPLEMENTATION
 	
-	Args:
-		n (Node): Node to evaluate this heuristic on.
-		G (list of States): The set of goal States. Assumed non-empty.
+		Args:
+			n (Node): Node to evaluate this heuristic on.
+			G (list of States): The set of goal States.
     
+	    Returns:
+	    	min_cost (float): The minimum cost to any goal State from Node n.
+		"""
+		pass
+  
+	def backtrack(self, n, closed_list):
+		"""
+    General backtracking function. Works for the above Node format.
+
+    Computes/returns the path preceding Node n by recursively backtracking
+    through the Node.prev pointers.
+
+    Args:
+      n (Node): The Node we're backtracking from.
+
     Returns:
-    	min_cost (float): The minimum cost to any goal State from Node n.
-	"""
-	pass
+      path (list of Nodes): The entire path leading to this Node.
+    """
+		curr = n
+		path = [n]
+		while curr.prev != None:
+			path.insert(0, curr.prev)
+			curr = curr.prev
+		return path
 
-def backtrack(n):
-	"""General backtracking function. Works for the above Node format.
+	def push(self, n, l):
+		"""
+    General unique-enforcing Push function.
 
-	Computes/returns the path preceding Node n by recursively backtracking
-	through the Node.prev pointers.
+    Adds Node n to the given list. If another Node in the list has the
+    same State as n, keeps the better Node based on its f value.
+
+    Args:
+      n (Node): The Node we're considering adding to the list.
+      list (list of Nodes): List to add the Node to.
+
+    Returns:
+      Directly edits the given list and thus returns nothing.
+    """
+		add_n = True # Add n unless a better Node is found.
+
+		for i in range(len(l)):
+			if l[i] == n: # list[i] has the same State as n...
+				if (n.f < l[i].f): # but n is better.
+					l.pop(i)
+				else: # but n is worse.
+					add_n = False
+				break
+
+		if add_n:
+			l.append(n)
+
+	def update_gui(self, open_list, closed_list, gui):
+		"""
+    Updates the GUI grid based on the current open and closed lists.
+    
+	  Interfaces with the GUI using information from the current
+	  open and closed lists. Entirely optional but can help debugging.
+
+		Implementation is optional. Interface with your chosen GUI object.
 	
-	Args:
-		n (Node): The Node we're backtracking from.
+		Args:
+			open_list (list of Nodes): Current open list.
+			closed_list (list of Nodes): Current closed list.
+			gui (): 
+		"""
+		pass
 
-	Returns:
-		path (list of Nodes): The entire path leading to this Node.
-	"""
-	curr = n
-	path = [n]
-	while curr.prev != None:
-		path.insert(0, curr.prev)
-		curr = curr.prev
-	return path
+	def a_star(self, s, G, gui=None):
+		"""General A* implementation. Works with above functions.
 
-def push(n, list):
-	"""General unique-enforcing Push function.
-
-	Adds Node n to the given list. If another Node in the list has the
-	same State as n, keeps the better Node based on its f value.
+		The corresponding line of pseudocode is labeled throughout.
 	
-	Args:
-		n (Node): The Node we're considering adding to the list.
-		list (list of Nodes): List to add the Node to.
+		Args:
+			s (State): Starting State for the algorithm.
+			G (list of States): Goal States for the algorithm.
+			gui (): Optional GUI parameter.
 
-	Returns:
-		Directly edits the given list and thus returns nothing.
-	"""
-	add_n = True # Add n unless a better Node is found.
+		Returns:
+			path (list of Nodes): Optimal path for the given planning problem.
+			An empty path indicates that the search has failed.
+		"""
+		open_list = [Node(s)] # Line 1. Converts starting State to Node.
+		closed_list = [] # Line 2
 
-	for i in range(len(list)):
-		if list[i] == n: # list[i] has the same State as n...
-			if (n.f < list[i].f): # but n is better.
-				list.pop(i)
-			else: # but n is worse.
-				add_n = False
-			break
+		if type(G) is list:
+			g_fn = lambda x: x in G
+		else:
+			g_fn = G
 
-	if add_n:
-		list.append(n)
+		while len(open_list) != 0: # Line 3
+			open_list.sort(key=lambda x: x.f) # Keeps open list sorted by f.
+			self.update_gui(open_list, closed_list, gui) # Update the GUI.
 
-def update_gui(open_list, closed_list, gui):
-	"""Updates the GUI. OPTIONAL IMPLEMENTATION
+			curr = open_list.pop(0) # Line 4
 
-	Interfaces with the GUI using information from the current
-	open and closed lists. Entirely optional but can help debugging.
-	
-	Args:
-		open_list (list of Nodes): Current open list.
-		closed_list (list of Nodes): Current closed list.
-		gui (): 
-	"""
-	pass
+			# Line 5. Scans over all goal states checking for equality.
+			if g_fn(curr.state):
+				print('found goal')
+				return self.backtrack(curr, closed_list) # Line 6
 
-def a_star(s, G, gui=None):
-	"""General A* implementation. Works with above functions.
+			closed_list.append(curr) # Line 7
 
-	The corresponding line of pseudocode is labeled throughout.
-	
-	Args:
-		s (State): Starting State for the algorithm.
-		G (list of States): Goal States for the algorithm.
-		gui (): Optional GUI parameter.
-
-	Returns:
-		path (list of Nodes): Optimal path for the given planning problem.
-		An empty path indicates that the search has failed.
-	"""
-	open_list = [Node(s)] # Line 1. Converts starting State to Node.
-	closed_list = [] # Line 2
-
-	while len(open_list) != 0: # Line 3
-		open_list.sort(key=lambda x: x.f) # Keeps open list sorted by f.
-		update_gui(open_list, closed_list, gui) # Update the GUI.
-
-		curr = open_list.pop(0) # Line 4
-
-		# Line 5. Scans over all goal states checking for equality.
-		for g in G:
-			if curr.state == g:
-				return backtrack(curr) # Line 6
-
-		closed_list.append(curr) # Line 7
-
-		for next in neighbors(curr): # Line 8
+			for n in self.neighbors(curr): # Line 8
 			
-			# Line 9. Scans over closed list to ensure new node is not closed.
-			skip = False
-			for closed_node in closed_list:
-				if next == closed_node:
-					skip = True
-					break
-			if skip:
-				continue # Line 10
+				# Line 9. Scans over closed list to ensure new node is not closed.
+				if n not in closed_list:
+					n.g = curr.g + self.cost(curr, n) # Line 11
+					n.f = n.g + self.h(n, G) # Line 12
+					n.prev = curr # Line 13
+					self.push(n, open_list) # Line 14
 
-			next.g = curr.g + cost(curr, next) # Line 11
-			next.f = next.g + h(next, G) # Line 12
-			next.prev = curr # Line 13
-			push(next, open_list) # Line 14
-
-	return [] # Line 15. Empty path indicates failure.
+		return [] # Line 15. Empty path indicates failure.
