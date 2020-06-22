@@ -92,7 +92,10 @@ class ArmGUI:
 		pathlen = len(path)
 		for i, node in enumerate(path):
 			print('path node {}/{}'.format(i, pathlen))
+			print(node)
 			self.config_pt = node.state
+			self.arm.set_joint_space(node.state, suppress = False)
+			print(self.arm.get_end_effector_pose())
 			self.update()
 			plt.pause(1e-3)
 

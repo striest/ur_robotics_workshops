@@ -3,22 +3,32 @@ from numpy import sin, cos, pi
 
 from link import Link, FixedLink
 
+from stepper_motors.stepper import Stepper
+from stepper_motors.stepper_array import StepperArray
+
 class Arm:
 	"""
 	2D arm class that is comprised of a list of links. (And exactly two degrees of freedom for plotting).
 	"""
-	def __init__(self, link_list):
+	def __init__(self, link_list, steppers = None):
 		self.links = []
 		self.control_links = []
 		for link in link_list:
 			self.links.append(link)
 			if isinstance(link, Link):
 				self.control_links.append(link)
+		if steppers:
+		    assert len(steppers) == len(self.control_links), 'Expected {} steppers, recieved {}.'.format(len(self.control_links), len(steppers))
+		    self.steppers = StepperArray(steppers)
+		else:
+		    self.steppers = None
 
-	def set_joint_space(self, angles):
+	def set_joint_space(self, angles, suppress = True):
 		assert len(angles) == len(self.control_links), 'Tried to assign {} angles to a {}DOF arm'.format(len(angles), len(self.control_links))
 		for angle, link in zip(angles, self.control_links):
 			link.set_angle(angle)
+		if self.steppers and not suppress:
+			self.steppers.rotate_to(angles)
 
 	def get_joint_space(self):
 		return np.array([link.angle for link in self.control_links])
