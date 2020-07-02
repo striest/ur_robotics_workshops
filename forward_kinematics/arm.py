@@ -24,17 +24,10 @@ class Arm:
 		return np.array([link.angle for link in self.control_links])
 
 	def get_joint_poses(self):
+		#WORKSHOP IMPLEMENTATION HERE
 		poses = [np.zeros(3)]
 		for link in self.links:
-			prev = poses[-1]
-			x = prev[0]
-			y = prev[1]
-			th = prev[2]
-			th_new = th + link.angle
-			x_new = x + link.length*cos(th_new)
-			y_new = y + link.length*sin(th_new)
-			curr = np.array([x_new, y_new, th_new])
-			poses.append(curr)
+			#Implementation here
 		return np.stack(poses, axis=0)
 
 	def get_end_effector_pose(self):

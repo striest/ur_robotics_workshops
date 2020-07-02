@@ -100,15 +100,9 @@ class GUI:
 		self.arm.set_joint_space(list(self.config_pt))
 
 		self.arm_obj = self.draw_arm()
-		self.goal_obj = self.draw_op_point(self.goal_pt)
 		self.config_obj = self.draw_config_point(self.config_pt)
-		self.draw_path()
-		self.draw_lists()
-		if self.h:
-			self.draw_h()
-
-		self.config_ax.set_title('Config Space ($\Theta_1$ = {:.2f}, $\Theta_2$ = {:.2f})'.format(*self.config_pt))
-		self.op_ax.set_title('Operational Space: Goal:(x = {:.2f}, y = {:.2f})'.format(*self.goal_pt))
+		self.config_ax.set_title('Joint Space ($\Theta_1$ = {:.2f}, $\Theta_2$ = {:.2f})'.format(*self.config_pt))
+		self.op_ax.set_title('Operational Space: EE:(x = {:.2f}, y = {:.2f})'.format(*self.arm.get_end_effector_pose()[:-1]))
 		self.config_ax.set_xlim(-0.1, 2*pi + 0.1)
 		self.config_ax.set_ylim(-0.1, 2*pi + 0.1)
 		self.op_ax.set_xlim(-10.1, 10.1)
@@ -133,8 +127,7 @@ if __name__ == '__main__':
 	l5 = Link(length = 4, max_angle=pi)
 	l6 = FixedLink(length = 0, angle = -pi/2)
 	l7 = Link(length = 4, max_angle=pi)
-	arm = Arm([l1, l2, l3, l4, l5, l6, l7])
-	arm = Arm([l1, l2, l3, l4, l5])
+	arm = Arm([l1, l3, l5])
 	print(arm)
 	gui = GUI(arm)
 
