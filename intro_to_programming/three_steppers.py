@@ -9,8 +9,8 @@ from stepper_motors.stepper_array import StepperArray
 
 def main():
     """Part 1: Working with one stepper motor"""
-    print("Hello! This entire file will guide you through some stepper motor examples.")
-    print("When the program prints out a code example, you can press enter to run that code. (press enter to advance)")
+    print("\nHello! This entire file will guide you through some stepper motor examples.")
+    input("When a code example is printed, press enter to run that code. (press enter to advance)")
     print("\n\n\nPart 1: Working with one stepper motor")
     
     input("s1 = Stepper(1, 2, 3, 4) # Creates an Stepper object named s1.") # Waits for the user to input something.
