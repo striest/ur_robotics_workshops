@@ -1,7 +1,6 @@
 # General A* Formulation
-# Author: Benned Hedegaard
-# Last revised 6/12/2020
-# Revisions by Sam Triest on 6/12/2020
+# Author: Benned Hedegaard and Sam Triest
+# Last revised 7/7/2020
 
 import abc
 
@@ -70,7 +69,6 @@ class Node:
 	def __repr__(self):
 		return str(self.state)+": g = "+str(self.g)+" f = "+str(self.f)
 
-
 class AStarPlanner(object, metaclass=abc.ABCMeta):
 
 	@abc.abstractmethod
@@ -99,6 +97,9 @@ class AStarPlanner(object, metaclass=abc.ABCMeta):
 		Args:
 			curr (Node): The Node an action was taken from.
 			next (Node): The Node reached by that action.
+
+		Returns:
+			cost (double): Cost of the action.
 		"""
 		pass
 
@@ -163,11 +164,9 @@ class AStarPlanner(object, metaclass=abc.ABCMeta):
 
 	def update_gui(self, open_list, closed_list, gui):
 		"""
-		Updates the GUI grid based on the current open and closed lists.
+		Updates the GUI grid based on the current open and closed lists. ENTIRELY OPTIONAL.
     
-		Interfaces with the GUI using information from the current open and closed lists. Entirely optional but can help debugging.
-
-		Implementation is optional. Interface with your chosen GUI object.
+		Interfaces with the chosen GUI object using information from the current open and closed lists.
 	
 		Args:
 			open_list (list of Nodes): Current open list.
