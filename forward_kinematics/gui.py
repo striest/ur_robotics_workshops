@@ -45,12 +45,21 @@ class GUI:
 		plt.show()
 
 	def draw_config_point(self, pt):
+		"""
+		Draws a point in config space
+		"""
 		return self.config_ax.scatter([pt[0]], [pt[1]], marker='x', c='r')
 
 	def draw_op_point(self, pt):
+		"""
+		Draws a point in operational space
+		"""
 		return self.op_ax.scatter([pt[0]], [pt[1]], marker='x', c='g')
 
 	def draw_arm(self):
+		"""
+		Draws the arm in operational space
+		"""
 		locs = self.arm.get_joint_poses()[:, :-1]
 		ee = self.arm.get_end_effector_pose()[:-1]
 		self.op_ax.plot(locs[:, 0], locs[:, 1], c='k')
@@ -58,6 +67,9 @@ class GUI:
 		self.op_ax.scatter(ee[0], ee[1], marker='x', c='r')
 
 	def draw_path(self):
+		"""
+		Draws the end-end effector positions in op-space for a list of config points.
+		"""
 		if self.path:
 			path_conf_pts = np.stack([n.pt for n in self.path]) % (2*pi)
 			self.config_ax.scatter(path_conf_pts[:, 0], path_conf_pts[:, 1], marker='.', s=4, c='b')
@@ -65,6 +77,9 @@ class GUI:
 			self.op_ax.plot(op_pts[:, 0], op_pts[:, 1], color='b')
 
 	def draw_lists(self):
+		"""
+		Draws explored planning nodes in operational space.
+		"""
 		if self.openlist:
 			pts = np.stack([n.pt%(2*pi) for n in self.openlist])
 			self.config_ax.scatter(pts[:, 0], pts[:, 1], alpha=0.25, c='k', marker='.', s=4)
@@ -74,6 +89,9 @@ class GUI:
 			
 		
 	def select_point(self, event):
+		"""
+		Allows user to update points in joint space and op-space.
+		"""
 		if event.inaxes == self.config_ax:
 			self.move_config_pt = True
 		elif event.inaxes == self.op_ax:
