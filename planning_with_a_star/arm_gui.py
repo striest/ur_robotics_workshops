@@ -134,7 +134,7 @@ class ArmGUI:
 		self.config_ax.set_xlim(-0.1, 2*pi + 0.1)
 		self.config_ax.set_ylim(0, len(self.arm.control_links) + 1)
 		self.op_ax.set_xlim(-self.arm_len() - 0.1, self.arm_len() + 0.1)
-		self.op_ax.set_ylim(-5.1, 2*self.arm_len() - 4.9)
+		self.op_ax.set_ylim(-self.arm_len() - 0.1, self.arm_len() + 0.1)
 		self.config_ax.set_xlabel('$\Theta$')
 		self.config_ax.set_ylabel('Joint Number')
 		self.op_ax.set_xlabel('X')
