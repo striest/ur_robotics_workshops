@@ -45,12 +45,21 @@ class GUI:
 		plt.show()
 
 	def draw_config_point(self, pt):
+		"""
+		Draws a point in config space
+		"""
 		return self.config_ax.scatter([pt[0]], [pt[1]], marker='x', c='r')
 
 	def draw_op_point(self, pt):
+		"""
+		Draws a point in operational space
+		"""
 		return self.op_ax.scatter([pt[0]], [pt[1]], marker='x', c='g')
 
 	def draw_arm(self):
+		"""
+		Draws the arm in operational space
+		"""
 		locs = self.arm.get_joint_poses()[:, :-1]
 		ee = self.arm.get_end_effector_pose()[:-1]
 		self.op_ax.plot(locs[:, 0], locs[:, 1], c='k')
@@ -58,6 +67,9 @@ class GUI:
 		self.op_ax.scatter(ee[0], ee[1], marker='x', c='r')
 
 	def draw_path(self):
+		"""
+		Draws the end-end effector positions in op-space for a list of config points.
+		"""
 		if self.path:
 			path_conf_pts = np.stack([n.pt for n in self.path]) % (2*pi)
 			self.config_ax.scatter(path_conf_pts[:, 0], path_conf_pts[:, 1], marker='.', s=4, c='b')
@@ -65,6 +77,9 @@ class GUI:
 			self.op_ax.plot(op_pts[:, 0], op_pts[:, 1], color='b')
 
 	def draw_lists(self):
+		"""
+		Draws explored planning nodes in operational space.
+		"""
 		if self.openlist:
 			pts = np.stack([n.pt%(2*pi) for n in self.openlist])
 			self.config_ax.scatter(pts[:, 0], pts[:, 1], alpha=0.25, c='k', marker='.', s=4)
@@ -74,6 +89,9 @@ class GUI:
 			
 		
 	def select_point(self, event):
+		"""
+		Allows user to update points in joint space and op-space.
+		"""
 		if event.inaxes == self.config_ax:
 			self.move_config_pt = True
 		elif event.inaxes == self.op_ax:
@@ -100,15 +118,9 @@ class GUI:
 		self.arm.set_joint_space(list(self.config_pt))
 
 		self.arm_obj = self.draw_arm()
-		self.goal_obj = self.draw_op_point(self.goal_pt)
 		self.config_obj = self.draw_config_point(self.config_pt)
-		self.draw_path()
-		self.draw_lists()
-		if self.h:
-			self.draw_h()
-
-		self.config_ax.set_title('Config Space ($\Theta_1$ = {:.2f}, $\Theta_2$ = {:.2f})'.format(*self.config_pt))
-		self.op_ax.set_title('Operational Space: Goal:(x = {:.2f}, y = {:.2f})'.format(*self.goal_pt))
+		self.config_ax.set_title('Joint Space ($\Theta_1$ = {:.2f}, $\Theta_2$ = {:.2f})'.format(*self.config_pt))
+		self.op_ax.set_title('Operational Space: EE:(x = {:.2f}, y = {:.2f})'.format(*self.arm.get_end_effector_pose()[:-1]))
 		self.config_ax.set_xlim(-0.1, 2*pi + 0.1)
 		self.config_ax.set_ylim(-0.1, 2*pi + 0.1)
 		self.op_ax.set_xlim(-10.1, 10.1)
@@ -133,8 +145,7 @@ if __name__ == '__main__':
 	l5 = Link(length = 4, max_angle=pi)
 	l6 = FixedLink(length = 0, angle = -pi/2)
 	l7 = Link(length = 4, max_angle=pi)
-	arm = Arm([l1, l2, l3, l4, l5, l6, l7])
-	arm = Arm([l1, l2, l3, l4, l5])
+	arm = Arm([l1, l3, l5])
 	print(arm)
 	gui = GUI(arm)
 

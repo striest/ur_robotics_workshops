@@ -10,7 +10,7 @@ class Link:
 	Angle: the current angle of the link
 	Min/max angle: limits on the rotation this link allows.
 	"""
-	def __init__(self, length, min_angle=0.0, max_angle=2*pi, angle = None):
+	def __init__(self, length, min_angle=0.0, max_angle=2*pi, angle = 0.0):
 		assert (angle >= min_angle) and (angle <= max_angle), 'angle not within joint bounds'
 		self.length = length
 		self.min_angle = min_angle

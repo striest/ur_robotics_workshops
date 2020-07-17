@@ -8,6 +8,7 @@ from arm_astar import ArmAStar
 from arm_gui import ArmGUI
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     lf1 = FixedLink(length = 0, angle = pi/2)
     l1 = Link(length = 11.8, angle = 0, min_angle = -1e4, max_angle = 1e4)
     lf2 = FixedLink(length = .12, angle = pi/2)
