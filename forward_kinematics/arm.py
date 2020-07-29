@@ -55,7 +55,15 @@ class Arm:
 		poses = [np.zeros(3)]
 		for link in self.links:
 			#Implementation here
-			pass
+			prev = poses[-1]
+			x = prev[0]
+			y = prev[1]
+			th = prev[2]
+			th_new = th + link.angle
+			x_new = x + link.length*cos(th_new)
+			y_new = y + link.length*sin(th_new)
+			curr = np.array([x_new, y_new, th_new])
+			poses.append(curr)
 			#End implementation
 		return np.stack(poses, axis=0)
 
