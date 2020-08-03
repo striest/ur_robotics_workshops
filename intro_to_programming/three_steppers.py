@@ -14,7 +14,7 @@ def main():
     print("\n\n\nPart 1: Working with one stepper motor")
     
     input("s1 = Stepper(1, 2, 3, 4) # Creates an Stepper object named s1.") # Waits for the user to input something.
-    s1 = Stepper(1, 2, 3, 4) # Creates an Stepper object named s1. CHECK THE ACTUAL PINS (the lights on the motor driver should flash in sequence).
+    s1 = Stepper(1, 2, 3, 4, delay = 1e-3) # Creates an Stepper object named s1. CHECK THE ACTUAL PINS (the lights on the motor driver should flash in sequence).
     input("print(type(s1)) # What should this print?")
     print(type(s1)) # What should this print?
     input("print(s1.angle) # Read the docs. What should this print?")
@@ -46,8 +46,8 @@ def main():
     
     # Just like before, we can create more Stepper objects connected to other pins.
     input("Just like before, we can create more Stepper objects connected to other pins.\ns2 = Stepper(5, 6, 7, 8)\ns3 = Stepper(9, 10, 11, 12)")
-    s2 = Stepper(5, 6, 7, 8)
-    s3 = Stepper(9, 10, 11, 12)
+    s2 = Stepper(5, 6, 7, 8, delay = 1e-3)
+    s3 = Stepper(9, 10, 11, 12, delay = 1e-3)
     
     text = input("Please input an angle to set all three steppers to:")
     angle = int(text)
